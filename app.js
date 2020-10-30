@@ -37,6 +37,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+	console.log(err);
 	const code = err.code || 500;
 	const msg = err.msg || '서버 내부 오류입니다. 관리자에게 문의하세요.';
 	res.render('./error.pug', { code, msg });

@@ -1,0 +1,11 @@
+extends ../layout/default.pug
+block content
+	.container
+		.jumbotron
+			h2 게시글 작성
+			button.btn.btn-primary(onclick="location.href='/';") 로그인
+		div.form-wrap
+			form(method="post" name="boardForm" action="/board/save")
+				input.form-control(name="title" placeholder="제목을 입력하세요.")
+				input.form-control(name="writer" placeholder="작성자를 입력하세요.")
+				textarea.form-control(name="content" placeholder="내용을 입력하세요.")
