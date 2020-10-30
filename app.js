@@ -27,3 +27,17 @@ app.use(express.urlencoded({extended: false}));
 app.use('/', express.static(path.join(__dirname, './public')));
 app.use('/board', boardRouter);
 app.use('/gallery', galleryRouter);
+
+/** error ********************************/
+app.use((req, res, next) => {
+	const err = new Error();
+	err.code = 404;
+	err.msg = '요청하신 페이지를 찾을 수 없습니다.';
+	next(err);
+});
+
+app.use((err, req, res, next) => {
+	const code = err.code || 500;
+	const msg = err.msg || '서버 내부 오류입니다. 관리자에게 문의하세요.';
+	res.render('./error.pug', { code, msg });
+});
