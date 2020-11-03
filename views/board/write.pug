@@ -2,13 +2,17 @@ extends ../layout/default.pug
 block content
 	.container
 		.jumbotron
-			h2 게시글 작성
+			h2= title
 			button.btn.btn-primary(onclick="location.href='/';") 로그인
 		div.form-wrap
-			form(method="post" name="boardForm" action="/board/save")
-				input.form-control(name="title" placeholder="제목을 입력하세요.")
-				input.form-control(name="writer" placeholder="작성자를 입력하세요.")
-				textarea.form-control(name="content" placeholder="내용을 입력하세요.")
+			form(method="post" name="boardForm" action=`${list ? '/board/saveUpdate' : '/board/save'}`)
+				input(type="hidden" name="id" value=`${list && list.id ? list.id : ''}`)
+				input.form-control(name="title" placeholder="제목을 입력하세요." value=`${list && list.title ? list.title : ''}`)
+				input.form-control(name="writer" placeholder="작성자를 입력하세요." value=`${list && list.writer ? list.writer : ''}`)
+				textarea.form-control(name="content" placeholder="내용을 입력하세요.")= `${list && list.content ? list.content : ''}`
 				hr
-				button.btn.btn-primary 저장
+				if list
+					button.btn.btn-success 수정
+				else
+					button.btn.btn-primary 저장
 				button.btn.btn-danger(type="reset") 다시작성

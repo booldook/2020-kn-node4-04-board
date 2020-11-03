@@ -2,6 +2,7 @@ const express = require('express');
 const moment = require('moment');
 const router = express.Router();
 const { pool } = require('../modules/mysql-conn');
+const { alert } = require('../modules/util');
 
 router.get(['/', '/list'], async (req, res, next) => {
 	const pug = {title: '게시판 리스트', js: 'board', css: 'board'};
@@ -57,5 +58,34 @@ router.get('/view/:id', async (req, res) => {
 		next(e);
 	}
 });
+
+router.get('/delete/:id', async (req, res, next) => {
+	try {
+		const sql = "DELETE FROM board WHERE id=?";
+		const values = [req.params.id];
+		const connect = await pool.getConnection();
+		const rs = await connect.query(sql, values);
+		res.send(alert('삭제되었습니다', '/board'));
+	}
+	catch(e) {
+		next(e);
+	}
+});
+
+router.get('/update/:id', async (req, res, next) => {
+	try {
+		const pug = {title: '게시글 수정', js: 'board', css: 'board'};
+		const sql = "SELECT * FROM board WHERE id=?";
+		const values = [req.params.id];
+		const connect = await pool.getConnection();
+		const rs = await connect.query(sql, values);
+		connect.release();
+		pug.list = rs[0][0];
+		res.render('./board/write.pug', pug);
+	}
+	catch(e) {
+		next(e);
+	}
+})
 
 module.exports = router;

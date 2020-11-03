@@ -24,4 +24,4 @@ block content
 			button.btn.btn-primary(onclick=`location.href='/board'`) 리스트
 			button.btn.btn-primary(onclick=`location.href='/board/write'`) 글쓰기
 			button.btn.btn-success(onclick=`location.href='/board/update/${list.id}'`) 수정
-			button.btn.btn-danger(onclick=`location.href='/board/delete/${list.id}'`) 삭제
+			button.btn.btn-danger(onclick=`onDelete(${list.id});`) 삭제
