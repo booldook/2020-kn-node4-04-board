@@ -14,13 +14,13 @@ router.get('/write', (req, res, next) => {
 
 router.post('/save', async (req, res, next) => {
 	const { title, content, writer } = req.body;
-	var values = [title, content, writer];
+	var values = [title, writer, content];
 	var sql = 'INSERT INTO board SET title=?, writer=?, content=?';
 	try {
 		const connect = await pool.getConnection();
 		const rs = await connect.query(sql, values);
 		connect.release();
-		res.json(rs);
+		res.redirect('/board');
 	}
 	catch(err) {
 		next(err);

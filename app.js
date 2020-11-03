@@ -5,7 +5,6 @@ const app = express();
 const path = require('path');
 
 /** modules ********************************/
-const { pool } = require('./modules/mysql-conn');
 const boardRouter = require('./routes/board');
 const galleryRouter = require('./routes/gallery');
 
