@@ -1,10 +1,24 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 const { pool } = require('../modules/mysql-conn');
 
-router.get(['/', '/list'], (req, res, next) => {
+router.get(['/', '/list'], async (req, res, next) => {
 	const pug = {title: '게시판 리스트', js: 'board', css: 'board'};
-	res.render('./board/list.pug', pug);
+	try {
+		const sql = 'SELECT * FROM board ORDER BY id DESC';
+		const connect = await pool.getConnection();
+		const rs = await connect.query(sql);
+		pug.lists = rs[0];
+		pug.lists.forEach((v) => {
+			v.wdate = moment(v.wdate).format('YYYY년 MM월 DD일');
+		});
+		connect.release();
+		res.render('./board/list.pug', pug);
+	}
+	catch(e) {
+		next(e);
+	}
 });
 
 router.get('/write', (req, res, next) => {
@@ -27,6 +41,21 @@ router.post('/save', async (req, res, next) => {
 	}
 });
 
-
+router.get('/view/:id', async (req, res) => {
+	try {
+		const pug = {title: '게시글 보기', js: 'board', css: 'board'};
+		const sql = "SELECT * FROM board WHERE id=?";
+		const values = [req.params.id];
+		const connect = await pool.getConnection();
+		const rs = await connect.query(sql, values);
+		connect.release();
+		pug.list = rs[0][0];
+		pug.list.wdate = moment(pug.list.wdate).format('YYYY-MM-DD HH:mm:ss');
+		res.render('./board/view.pug', pug);
+	}
+	catch(e) {
+		next(e);
+	}
+});
 
 module.exports = router;

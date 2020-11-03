@@ -2,7 +2,7 @@ extends ../layout/default.pug
 block content
 	.container
 		.jumbotron.my-2
-			h1 리스트페이지
+			h1= title
 			button.btn.btn-primary(onclick="location.href='/board/write';") 글작성
 		table.table.table-bordered.text-center
 			thead.thead-dark
@@ -13,9 +13,11 @@ block content
 					th 내용
 					th 작성일
 			tbody
-				tr
-					td 1
-					td.text-left 안녕하세요
-					td 글쓴이
-					td 하이하이~
-					td 2020-11-03
+				each v in lists
+					tr
+						td= v.id
+						td.text-left
+							a(href=`/board/view/${v.id}`)= v.title
+						td= v.writer
+						td.text-left= v.content
+						td= v.wdate
