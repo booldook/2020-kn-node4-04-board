@@ -10,11 +10,11 @@ router.get(['/', '/list'], async (req, res, next) => {
 		const sql = 'SELECT * FROM board ORDER BY id DESC';
 		const connect = await pool.getConnection();
 		const rs = await connect.query(sql);
+		connect.release();
 		pug.lists = rs[0];
 		pug.lists.forEach((v) => {
 			v.wdate = moment(v.wdate).format('YYYY년 MM월 DD일');
 		});
-		connect.release();
 		res.render('./board/list.pug', pug);
 	}
 	catch(e) {
@@ -65,6 +65,7 @@ router.get('/delete/:id', async (req, res, next) => {
 		const values = [req.params.id];
 		const connect = await pool.getConnection();
 		const rs = await connect.query(sql, values);
+		connect.release();
 		res.send(alert('삭제되었습니다', '/board'));
 	}
 	catch(e) {
@@ -86,6 +87,22 @@ router.get('/update/:id', async (req, res, next) => {
 	catch(e) {
 		next(e);
 	}
-})
+});
+
+router.post('/saveUpdate', async (req, res, next) => {
+	const { id, title, writer, content } = req.body;
+	try {
+		const sql = "UPDATE board SET title=?, writer=?, content=? WHERE id=?";
+		const values = [title, writer, content, id];
+		const connect = await pool.getConnection();
+		const rs = await connect.query(sql, values);
+		connect.release();
+		if(rs[0].affectedRows == 1) res.send(alert('수정되었습니다', '/board'));
+		else res.send(alert('수정에 실패하였습니다.', '/board'));
+	}
+	catch(e) {
+		next(e);
+	}
+});
 
 module.exports = router;
