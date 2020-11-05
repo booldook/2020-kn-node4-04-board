@@ -1,0 +1,7 @@
+extends ../layout/default.pug
+block content
+	.container
+		form(method="post" action="/test/save" enctype="multipart/form-data")
+			input.form-control(type="text" name="title")
+			input.form-control(type="file" name="upfile")
+			button.btn.btn-primary 저장
