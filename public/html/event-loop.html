@@ -1,0 +1,33 @@
+<script>
+	function first() {
+		second();
+		console.log("FIRST");
+	}
+	
+	function second() {
+		third();
+		console.log("SECOND");
+	}
+	
+	function third() {
+		console.log("THIRD");
+	}
+
+	first();
+
+
+	console.log("Hi");
+	setTimeout(function(){
+		console.log("Hi Timeout");
+	}, 5000);
+	console.log("Hi2");
+
+
+	function pro() {
+		return new Promise((resolve, reject) => {
+
+		});
+	}
+
+	console.log(	pro()	);
+</script>
