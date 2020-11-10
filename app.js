@@ -38,7 +38,7 @@ app.get('/test/upload', (req, res, next) => {
 });
 
 app.post('/test/save', upload.single("upfile"), (req, res, next) => {
-	res.json(req.body);
+	res.json(req.allowUpload);
 });
 
 
