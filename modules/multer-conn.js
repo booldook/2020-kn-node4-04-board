@@ -5,6 +5,7 @@ const fs = require('fs');
 const fsp = require('fs/promises');
 const { v4: uuidv4 } = require('uuid');
 const allowExt = ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'pdf', 'hwp'];
+const imgExt = ['jpg', 'jpeg', 'png', 'gif'];
 
 const makeFolder = () => {
 	const result = { err: null };
@@ -48,4 +49,4 @@ const storage = multer.diskStorage({
  
 const upload = multer({ storage, fileFilter, limits: {fileSize: 20480000} });
 
-module.exports = { upload };
+module.exports = { upload, allowExt, imgExt };

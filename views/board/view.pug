@@ -20,6 +20,16 @@ block content
 			li.d-flex.list.border-bottom
 				div(style="flex: 30% 0 0;").p-2.bg-warning 내용
 				div.p-2= list.content
+			if list.savefile
+				li.d-flex.list.border-bottom
+					div(style="flex: 30% 0 0;").p-2.bg-warning 첨부파일
+					div.p-2
+						a(href=`/board/download/${list.savefile}`)= list.realfile
+			if list.imgSrc
+				li.d-flex.list.border-bottom
+					div(style="flex: 30% 0 0;").p-2.bg-warning 첨부이미지
+					div.p-2
+						img.mw-100(src=`${list.imgSrc}`)
 		.p-3.text-center
 			button.btn.btn-primary(onclick=`location.href='/board'`) 리스트
 			button.btn.btn-primary(onclick=`location.href='/board/write'`) 글쓰기
