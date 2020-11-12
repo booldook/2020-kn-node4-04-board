@@ -1,17 +1,20 @@
 const express = require('express');
 const moment = require('moment');
 const path = require('path');
+const createError = require('http-errors');
 const router = express.Router();
 const { pool } = require('../modules/mysql-conn');
 const { alert } = require('../modules/util');
 const { upload, imgExt } = require('../modules/multer-conn');
+const { connect } = require('http2');
 
 router.get(['/', '/list'], async (req, res, next) => {
-	const pug = {title: '게시판 리스트', js: 'board', css: 'board'};
+	let connect, rs, sql, values, pug;
+	pug = {title: '게시판 리스트', js: 'board', css: 'board'};
 	try {
-		const sql = 'SELECT * FROM board ORDER BY id DESC';
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql);
+		sql = 'SELEC * FROM board ORDER BY id DESC';
+		connect = await pool.getConnection();
+		rs = await connect.query(sql);
 		connect.release();
 		pug.lists = rs[0];
 		pug.lists.forEach((v) => {
@@ -20,7 +23,8 @@ router.get(['/', '/list'], async (req, res, next) => {
 		res.render('./board/list.pug', pug);
 	}
 	catch(e) {
-		next(e);
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
@@ -30,39 +34,41 @@ router.get('/write', (req, res, next) => {
 });
 
 router.post('/save', upload.single('upfile'), async (req, res, next) => {
-	const { title, content, writer } = req.body;
-	const values = [title, writer, content];
-	var sql = 'INSERT INTO board SET title=?, writer=?, content=?';
-
-	if(req.allowUpload) {
-		if(req.allowUpload.allow) {
-			sql += ', savefile=?, realfile=?';
-			values.push(req.file.filename);
-			values.push(req.file.originalname);
-		}
-		else {
-			res.send(alert(`${req.allowUpload.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
-		}
-	}
+	let connect, rs, sql, values, pug;
+	let { title, content, writer } = req.body;
 
 	try {
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql, values);
+		values = [title, writer, content];
+		sql = 'INSERT INTO board SET title=?, writer=?, content=?';
+		if(req.allowUpload) {
+			if(req.allowUpload.allow) {
+				sql += ', savefile=?, realfile=?';
+				values.push(req.file.filename);
+				values.push(req.file.originalname);
+			}
+			else {
+				res.send(alert(`${req.allowUpload.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
+			}
+		}
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
 		connect.release();
 		res.redirect('/board');
 	}
-	catch(err) {
-		next(err);
+	catch(e) {
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
 router.get('/view/:id', async (req, res) => {
+	let connect, rs, sql, values, pug;
 	try {
-		const pug = {title: '게시글 보기', js: 'board', css: 'board'};
-		const sql = "SELECT * FROM board WHERE id=?";
-		const values = [req.params.id];
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql, values);
+		pug = {title: '게시글 보기', js: 'board', css: 'board'};
+		sql = "SELECT * FROM board WHERE id=?";
+		values = [req.params.id];
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
 		connect.release();
 		pug.list = rs[0][0];
 		pug.list.wdate = moment(pug.list.wdate).format('YYYY-MM-DD HH:mm:ss');
@@ -75,53 +81,60 @@ router.get('/view/:id', async (req, res) => {
 		res.render('./board/view.pug', pug);
 	}
 	catch(e) {
-		next(e);
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
 router.get('/delete/:id', async (req, res, next) => {
+	let connect, rs, sql, values, pug;
 	try {
-		const sql = "DELETE FROM board WHERE id=?";
-		const values = [req.params.id];
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql, values);
+		sql = "DELETE FROM board WHERE id=?";
+		values = [req.params.id];
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
 		connect.release();
 		res.send(alert('삭제되었습니다', '/board'));
 	}
 	catch(e) {
-		next(e);
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
 router.get('/update/:id', async (req, res, next) => {
+	let connect, rs, sql, values, pug;
 	try {
-		const pug = {title: '게시글 수정', js: 'board', css: 'board'};
-		const sql = "SELECT * FROM board WHERE id=?";
-		const values = [req.params.id];
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql, values);
+		pug = {title: '게시글 수정', js: 'board', css: 'board'};
+		sql = "SELECT * FROM board WHERE id=?";
+		values = [req.params.id];
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
 		connect.release();
 		pug.list = rs[0][0];
 		res.render('./board/write.pug', pug);
 	}
 	catch(e) {
-		next(e);
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
 router.post('/saveUpdate', async (req, res, next) => {
-	const { id, title, writer, content } = req.body;
+	let connect, rs, sql, values, pug;
+	let { id, title, writer, content } = req.body;
 	try {
-		const sql = "UPDATE board SET title=?, writer=?, content=? WHERE id=?";
-		const values = [title, writer, content, id];
-		const connect = await pool.getConnection();
-		const rs = await connect.query(sql, values);
+		sql = "UPDATE board SET title=?, writer=?, content=? WHERE id=?";
+		values = [title, writer, content, id];
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
 		connect.release();
 		if(rs[0].affectedRows == 1) res.send(alert('수정되었습니다', '/board'));
 		else res.send(alert('수정에 실패하였습니다.', '/board'));
 	}
 	catch(e) {
-		next(e);
+		if(connect) connect.release();
+		next(createError(500, e.sqlMessage));
 	}
 });
 
