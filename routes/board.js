@@ -12,7 +12,7 @@ router.get(['/', '/list'], async (req, res, next) => {
 	let connect, rs, sql, values, pug;
 	pug = {title: '게시판 리스트', js: 'board', css: 'board'};
 	try {
-		sql = 'SELEC * FROM board ORDER BY id DESC';
+		sql = 'SELECT * FROM board ORDER BY id DESC';
 		connect = await pool.getConnection();
 		rs = await connect.query(sql);
 		connect.release();
