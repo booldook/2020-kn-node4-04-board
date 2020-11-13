@@ -4,17 +4,18 @@ const path = require('path');
 const fs = require('fs-extra');
 const createError = require('http-errors');
 const router = express.Router();
-const { pool, sqlGen } = require('../modules/mysql-conn');
+const { pool } = require('../modules/mysql-conn');
 const { alert, uploadFolder } = require('../modules/util');
 const { upload, imgExt } = require('../modules/multer-conn');
+const { connect } = require('http2');
 
 router.get(['/', '/list'], async (req, res, next) => {
-	let connect, rs, pug;
+	let connect, rs, sql, values, pug;
 	pug = {title: '게시판 리스트', js: 'board', css: 'board'};
 	try {
-		let temp = sqlGen('board', { mode: 'S', desc: 'ORDER BY id DESC' });
+		sql = 'SELECT * FROM board ORDER BY id DESC';
 		connect = await pool.getConnection();
-		rs = await connect.query(temp.sql);
+		rs = await connect.query(sql);
 		connect.release();
 		pug.lists = rs[0];
 		pug.lists.forEach((v) => {
@@ -34,23 +35,26 @@ router.get('/write', (req, res, next) => {
 });
 
 router.post('/save', upload.single('upfile'), async (req, res, next) => {
-	let connect, rs;
+	let connect, rs, sql, values, pug;
+	let { title, content, writer } = req.body;
+
 	try {
-		if(!req.allow) {
-			res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
+		values = [title, writer, content];
+		sql = 'INSERT INTO board SET title=?, writer=?, content=?';
+		if(req.allowUpload) {
+			if(req.allowUpload.allow) {
+				sql += ', savefile=?, realfile=?';
+				values.push(req.file.filename);
+				values.push(req.file.originalname);
+			}
+			else {
+				res.send(alert(`${req.allowUpload.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
+			}
 		}
-		else {
-			let temp = sqlGen('board', {
-				mode: 'I', 
-				field: ['title', 'writer', 'content'], 
-				data: req.body,
-				file: req.file
-			});
-			connect = await pool.getConnection();
-			rs = await connect.query(temp.sql, temp.values);
-			connect.release();
-			res.redirect('/board');
-		}
+		connect = await pool.getConnection();
+		rs = await connect.query(sql, values);
+		connect.release();
+		res.redirect('/board');
 	}
 	catch(e) {
 		if(connect) connect.release();
