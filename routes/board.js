@@ -24,7 +24,7 @@ router.get(['/', '/list'], async (req, res, next) => {
 	}
 	catch(e) {
 		if(connect) connect.release();
-		next(createError(500, e.sqlMessage));
+		next(createError(500, e.sqlMessage || e));
 	}
 });
 
@@ -36,9 +36,7 @@ router.get('/write', (req, res, next) => {
 router.post('/save', upload.single('upfile'), async (req, res, next) => {
 	let connect, rs;
 	try {
-		if(!req.allow) {
-			res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
-		}
+		if(!req.allow) res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
 		else {
 			let temp = sqlGen('board', {
 				mode: 'I', 
@@ -54,18 +52,17 @@ router.post('/save', upload.single('upfile'), async (req, res, next) => {
 	}
 	catch(e) {
 		if(connect) connect.release();
-		next(createError(500, e.sqlMessage));
+		next(createError(500, e.sqlMessage || e));
 	}
 });
 
 router.get('/view/:id', async (req, res) => {
-	let connect, rs, sql, values, pug;
+	let connect, rs, pug;
 	try {
 		pug = {title: '게시글 보기', js: 'board', css: 'board'};
-		sql = "SELECT * FROM board WHERE id=?";
-		values = [req.params.id];
+		let temp = sqlGen('board', {mode: 'S', id: req.params.id});
 		connect = await pool.getConnection();
-		rs = await connect.query(sql, values);
+		rs = await connect.query(temp.sql);
 		connect.release();
 		pug.list = rs[0][0];
 		pug.list.wdate = moment(pug.list.wdate).format('YYYY-MM-DD HH:mm:ss');
