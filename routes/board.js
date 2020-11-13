@@ -133,34 +133,12 @@ router.post('/saveUpdate', upload.single('upfile'), async (req, res, next) => {
 			});
 			rs = await connect.query(temp.sql, temp.values);
 			connect.release();
+			res.send(alert('수정되었습니다', '/board'));
 		}
-
-
-		sqlRoot = 'UPDATE board SET title=?, writer=?, content=?';
-		values = [title, writer, content];
-		if(req.allowUpload) {
-			if(req.allowUpload.allow) {
-				sql = 'SELECT savefile FROM board WHERE id='+id;
-				
-				if(rs[0][0].savefile) fs.removeSync(uploadFolder(rs[0][0].savefile));
-				sqlRoot += ', savefile=?, realfile=?';
-				values.push(req.file.filename);
-				values.push(req.file.originalname);
-			}
-			else {
-				res.send(alert(`${req.allowUpload.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
-			}
-		}
-		sqlRoot += ' WHERE id='+id;
-		connect = await pool.getConnection();
-		rs = await connect.query(sqlRoot, values);
-		connect.release();
-		if(rs[0].affectedRows == 1) res.send(alert('수정되었습니다', '/board'));
-		else res.send(alert('수정에 실패하였습니다.', '/board'));
 	}
 	catch(e) {
 		if(connect) connect.release();
-		next(createError(500, e.sqlMessage));
+		next(createError(500, e.sqlMessage || e));
 	}
 });
 
