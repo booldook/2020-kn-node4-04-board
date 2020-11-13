@@ -1,0 +1,60 @@
+<script>
+// mode = 'I', 'U', 'S', 'D'
+// table = 'tableName'
+// field = ['title', 'writer', 'content']
+// data = {title: 'A', content: 'B'} // req.body
+// file = {filename: '201113-.jpg', originalname: 'abc.jpg', size: 1234} // req.file
+// key = id값
+const sqlGen = (obj) => {
+	let { mode=null, table=null, field=[], data={}, file=null, id=null, sql=null, values=[], desc=null } = obj;
+	let temp = Object.entries(data).filter(v => field.includes(v[0]));
+	console.log(id);
+
+	switch(mode) {
+		case 'I':
+			sql = `INSERT INTO ${table} SET `;
+			break;
+		case 'U':
+			sql = `UPDATE ${table} SET `;
+			break;
+		case 'D':
+			sql = `DELETE FROM ${table} WHERE id=${id} `;
+			break;
+		case 'S':
+			sql = `SELECT ${field.length == 0 ? '*' : field.toString()} FROM ${table} `;
+			if(id) sql += ` WHERE id=${id} `;
+			if(desc) sql += ` ${desc} `;
+			break;
+	}
+
+	for(let v of temp) {
+		sql += `${v[0]}=?,`;
+		values.push(v[1]);
+	}
+
+	if(file) {
+		sql += `savefile=?,realfile=?,`;
+		values.push(file.filename);
+		values.push(file.originalname);
+	}
+	sql = sql.substr(0, sql.length - 1);
+
+	if(mode == 'I', mode == 'U') sql += ` WHERE id=${id}`;
+
+	console.log(sql, values);
+
+
+	// return { sql, values }
+}
+
+var temp = sqlGen({
+	mode: 'S',
+	table: 'board',
+	desc: 'ORDER BY id DESC'
+	//id: 2,
+	//field: ['title', 'writer', 'content'],
+	//data: {title: 'A', content: 'B', wdate: '2020-11-13', writer: '홍길동'},
+	//file: {filename: '201113-.jpg', originalname: 'abc.jpg', size: 1234},
+});
+//console.log(temp);
+</script>
