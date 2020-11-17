@@ -9,9 +9,9 @@ const pool = mysql.createPool({
 	connectionLimit: 10
 });
 
-const sqlGen = (table, obj) => {
+const sqlGen = async (table, obj) => {
 	let {mode=null, field=[], data={}, file=null, id=null, desc=null} = obj;
-	let sql=null, values=[];
+	let sql=null, values=[], connect=null, rs=null;
 	let temp = Object.entries(data).filter(v => field.includes(v[0]));
 
 	switch(mode) {
@@ -43,7 +43,10 @@ const sqlGen = (table, obj) => {
 	}
 	sql = sql.substr(0, sql.length - 1);
 	if(mode == 'I', mode == 'U') sql += ` WHERE id=${id}`;
-	return { sql, values }
+	connect = await pool.getConnection();
+	rs = await connect.query(sql, values);
+	connect.release();
+	return rs;
 }
 
 module.exports = { mysql, pool, sqlGen };
