@@ -44,6 +44,7 @@ const sqlGen = async (table, obj) => {
 	sql = sql.substr(0, sql.length - 1);
 	if(mode == 'I', mode == 'U') sql += ` WHERE id=${id}`;
 	connect = await pool.getConnection();
+	console.log(sql);
 	rs = await connect.query(sql, values);
 	connect.release();
 	return rs;
