@@ -12,11 +12,10 @@ const pager = require('../modules/pager-conn');
 router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 	let page = req.params.page || 1;
 	let connect, rs, pug;
-	pug = {title: '게시판 리스트', js: 'board', css: 'board'};
 	try {
 		rs = await sqlGen('board', {mode: 'S', field: ['count(id)']});
-		let pagers = pager(page, rs[0][0]['count(id)'], {pagerCnt: 5});
-		pug.pagers = pagers;
+		let pagers = pager(page, rs[0][0]['count(id)'], {pagerCnt: 3, listCnt: 7});
+		pug = {title: '게시판 리스트', js: 'board', css: 'board', ...pagers};
 		rs = await sqlGen('board', { 
 			mode: 'S', 
 			desc: `ORDER BY id DESC LIMIT ${pagers.startIdx}, ${pagers.listCnt}` 
