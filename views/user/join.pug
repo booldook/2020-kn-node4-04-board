@@ -1,0 +1,28 @@
+extends ../layout/default.pug
+block content
+	.container
+		.jumbotron.my-2
+			h1= title
+			hr
+			p 회원이시라면 아래의 버튼을 클릭하여 로그인 하세요.
+			button.btn.btn-primary(onclick="location.href='/user/login';") 회원로그인
+		form(name="joinForm" method="post" onsubmit="return onJoin(this);")
+			input(type="hidden" name="useridValid" value="");
+			table.table.my-5.tb-join.border-bottom
+				tbody
+					tr
+						td.title 아이디
+						td.content
+							input.form-control(type="text" name="userid" placeholder="아이디")
+							.valid
+					tr
+						td.title 패스워드
+						td.content
+							input.form-control(type="password" name="userpw" placeholder="패스워드")
+					tr
+						td.title 이름
+						td.content
+							input.form-control(type="text" name="username" placeholder="이름")
+			.text-center
+				button.btn.btn-primary 가입
+				button.btn.btn-info(type="button" onclick="location.href='/user/login';") 로그인

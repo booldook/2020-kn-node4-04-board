@@ -7,6 +7,8 @@
 // proxy - reverse proxy
 
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
 let password = 'abcd1234';
 let salt = 'axcjk9234kASFC++1234||sdf';
 let hash = crypto.createHash('sha512').update(password+salt).digest('base64');
@@ -24,3 +26,12 @@ let decipher = crypto.createDecipher('aes-256-cbc', salt);
 let result2 = decipher.update(result, 'base64', 'utf-8');
 result2 += decipher.final('utf-8');
 console.log(result2);
+
+async function bcryptTest(){
+	let bcryptHash = await bcrypt.hash(password+salt, 9);
+	let bcryptHash2 = await bcrypt.hash(password+salt, 9);
+	let bcryptCompare = await bcrypt.compare(password, bcryptHash);
+	console.log(bcryptHash, bcryptHash2, bcryptCompare);
+}
+
+bcryptTest();

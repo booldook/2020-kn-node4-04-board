@@ -10,6 +10,7 @@ const createError = require('http-errors');
 const logger = require('./modules/morgan-conn');
 const boardRouter = require('./routes/board');
 const galleryRouter = require('./routes/gallery');
+const userRouter = require('./routes/user');
 
 /** Initialize ********************************/
 app.listen(process.env.PORT, () => {
@@ -32,6 +33,7 @@ app.use('/', express.static(path.join(__dirname, './public')));
 app.use('/storage', express.static(path.join(__dirname, './uploads')));
 app.use('/board', boardRouter);
 app.use('/gallery', galleryRouter);
+app.use('/user', userRouter);
 
 
 /** error ********************************/
