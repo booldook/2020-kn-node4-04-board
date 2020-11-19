@@ -11,10 +11,13 @@ router.get('/join', (req, res, next) => {
 
 router.get('/idchk/:userid', async (req, res, next) => {
 	try {
-		let rs = await sqlGen('users', {
+		let rs = await sqlGen('users', 'S', {
 			field:['userid'],
-			
+			where: ['userid', req.params.userid]
 		});
+		// rs[0] => [], rs[0] => [{userid: 'booldook'}]
+		if(rs[0].length > 0) res.json({code: 200, isUsed: false});
+		else res.json({code: 200, isUsed: true});
 	}
 	catch(e) {
 		res.json({ code: 500, error: e.sqlMessage || e});
