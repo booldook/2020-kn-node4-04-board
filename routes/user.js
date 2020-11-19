@@ -47,4 +47,42 @@ router.post('/save', async (req, res, next) => {
 	}
 });
 
+router.get('/login', (req, res, next) => {
+	const pug = {title: '회원 로그인', js: 'user-fr', css: 'user-fr'}
+	res.render('user/login', pug);
+});
+
+router.post('/logon', async (req, res, next) => {
+	try {
+		let rs = await sqlGen('users', 'S', {
+			where: ['userid', req.body.userid]
+		});
+		if(rs[0].length > 0) {
+			let compare = await bcrypt.compare(
+				req.body.userpw + process.env.BCRYPT_SALT, rs[0][0].userpw);
+			if(compare) {
+				req.session.user = {
+					userid: req.body.userid,
+					username: req.body.username
+				}
+				res.send(alert('로그인 되었습니다.', '/board'));
+			}
+			else {
+				res.send(alert('정보가 올바르지 않습니다.', '/user/login'));
+			}
+		}
+		else {
+			res.send(alert('정보가 올바르지 않습니다.', '/user/login'));
+		}
+	}
+	catch(e) {
+		next(createError(500, e.sqlMessage || e));
+	}
+});
+
+router.get('/logout', (req, res, next) => {
+	if(req.session) req.session.destroy();
+	res.redirect('/board');
+})
+
 module.exports = router;

@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const createError = require('http-errors');
+const session = require('express-session');
 
 
 /** modules ********************************/
@@ -26,6 +27,12 @@ app.locals.pretty = true;
 app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+app.use(session({
+	secret: process.env.SESSION_SALT,
+	resave: false,
+	saveUninitialized: true,
+	cookie: { secure: false }
+}));
 
 
 /** routers ********************************/

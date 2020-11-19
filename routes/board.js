@@ -15,7 +15,11 @@ router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 	try {
 		rs = await sqlGen('board', 'S', {field: ['count(id)']});
 		let pagers = pager(page, rs[0][0]['count(id)'], {pagerCnt: 3, listCnt: 7});
-		pug = {title: '게시판 리스트', js: 'board', css: 'board', ...pagers};
+		pug = {
+			title: '게시판 리스트', js: 'board', css: 'board', 
+			...pagers, 
+			user: req.session ? req.session.user : {}
+		};
 		rs = await sqlGen('board', 'S', { 
 			order: ['id', 'DESC'], 
 			limit: [pagers.startIdx, pagers.listCnt]

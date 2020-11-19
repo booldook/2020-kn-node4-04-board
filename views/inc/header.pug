@@ -5,6 +5,8 @@ header
 		a.navi(href='/board') BOARD
 		a.navi(href='/gallery') GALLERY
 		span.mx-3 |
-		a.navi(href='/user/join') JOIN
-		a.navi(href='/user/login') LOGIN
-		a.navi(href='/user/logout') LOGOUT
+		if user && user.userid
+			a.navi(href='/user/logout') LOGOUT
+		else
+			a.navi(href='/user/join') JOIN
+			a.navi(href='/user/login') LOGIN
