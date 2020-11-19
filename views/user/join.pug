@@ -6,7 +6,7 @@ block content
 			hr
 			p 회원이시라면 아래의 버튼을 클릭하여 로그인 하세요.
 			button.btn.btn-primary(onclick="location.href='/user/login';") 회원로그인
-		form(name="joinForm" method="post" onsubmit="return onJoin(this);")
+		form(name="joinForm" method="post" onsubmit="return onJoin(this);" action="/user/save")
 			input(type="hidden" name="useridValid" value="")
 			table.table.my-5.tb-join.border-bottom
 				tbody
