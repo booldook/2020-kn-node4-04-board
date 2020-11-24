@@ -62,9 +62,11 @@ router.post('/logon', async (req, res, next) => {
 				req.body.userpw + process.env.BCRYPT_SALT, rs[0][0].userpw);
 			if(compare) {
 				req.session.user = {
-					userid: req.body.userid,
-					username: req.body.username
+					id: rs[0][0].id,
+					userid: rs[0][0].userid,
+					username: rs[0][0].username
 				}
+				req.app.locals.user = req.session.user || {};
 				res.send(alert('로그인 되었습니다.', '/board'));
 			}
 			else {
@@ -81,7 +83,10 @@ router.post('/logon', async (req, res, next) => {
 });
 
 router.get('/logout', (req, res, next) => {
-	if(req.session) req.session.destroy();
+	if(req.session) {
+		req.session.destroy();
+		req.app.locals.user = null;
+	}
 	res.redirect('/board');
 })
 

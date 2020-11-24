@@ -2,7 +2,6 @@ const multer = require('multer');
 const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
-const fsp = require('fs/promises');
 const { v4: uuidv4 } = require('uuid');
 const allowExt = ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'pdf', 'hwp'];
 const imgExt = ['jpg', 'jpeg', 'png', 'gif'];

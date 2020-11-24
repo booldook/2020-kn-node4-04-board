@@ -17,8 +17,7 @@ router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 		let pagers = pager(page, rs[0][0]['count(id)'], {pagerCnt: 3, listCnt: 7});
 		pug = {
 			title: '게시판 리스트', js: 'board', css: 'board', 
-			...pagers, 
-			user: req.session ? req.session.user : {}
+			...pagers
 		};
 		rs = await sqlGen('board', 'S', { 
 			order: ['id', 'DESC'], 
@@ -45,8 +44,9 @@ router.post('/save', upload.single('upfile'), async (req, res, next) => {
 	try {
 		if(req.allow === false) res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
 		else {
+			req.body.uid = req.session.user ? req.session.user.id : null;
 			rs = await sqlGen('board', 'I', {
-				field: ['title', 'writer', 'content'], 
+				field: ['title', 'writer', 'content', 'uid'], 
 				data: req.body,
 				file: req.file
 			});

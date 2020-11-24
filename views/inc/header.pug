@@ -1,5 +1,6 @@
 header
 	.logo booldook
+		span= `${user && user.username ? '['+user.username+']' : ''}`
 	.navi-wrap
 		a.navi(href='/') HOME
 		a.navi(href='/board') BOARD
