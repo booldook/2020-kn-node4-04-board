@@ -8,6 +8,7 @@ const { pool, sqlGen } = require('../modules/mysql-conn');
 const { alert, uploadFolder, imgFolder, extGen } = require('../modules/util');
 const { upload, imgExt } = require('../modules/multer-conn');
 const pager = require('../modules/pager-conn');
+const { isUser, isGuest } = require('../modules/auth-conn');
 
 router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 	let page = req.params.page || 1;
@@ -34,12 +35,12 @@ router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 	}
 });
 
-router.get('/write', (req, res, next) => {
+router.get('/write', isUser, (req, res, next) => {
 	const pug = {title: '게시글 작성', js: 'board', css: 'board'};
 	res.render('./board/write.pug', pug);
 });
 
-router.post('/save', upload.single('upfile'), async (req, res, next) => {
+router.post('/save', isUser, upload.single('upfile'), async (req, res, next) => {
 	let connect, rs;
 	try {
 		if(req.allow === false) res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
@@ -77,12 +78,20 @@ router.get('/view/:id', async (req, res) => {
 	}
 });
 
-router.get('/delete/:id', async (req, res, next) => {
+router.get('/delete/:id', isUser, async (req, res, next) => {
 	let connect, rs, temp;
 	try {
-		rs = await sqlGen('board', 'S', {where: ['id', req.params.id], field: ['savefile']});
+		rs = await sqlGen('board', 'S', { where: {
+			op: 'AND',
+			fields: [['id', req.params.id], ['uid', req.session.user.id]]
+		}, field: ['savefile']});
 		if(rs[0][0].savefile) await fs.remove(uploadFolder(rs[0][0].savefile));
-		rs = await sqlGen('board', 'D', {where: ['id', req.params.id]});
+		rs = await sqlGen('board', 'D', {
+			where: {
+				op: 'AND',
+				fields: [['id', req.params.id], ['uid', req.session.user.id]]
+			}
+		});
 		res.send(alert('삭제되었습니다', '/board'));
 	}
 	catch(e) {
@@ -90,11 +99,16 @@ router.get('/delete/:id', async (req, res, next) => {
 	}
 });
 
-router.get('/update/:id', async (req, res, next) => {
+router.get('/update/:id', isUser, async (req, res, next) => {
 	let connect, rs, pug;
 	try {
 		pug = {title: '게시글 수정', js: 'board', css: 'board'};
-		rs = await sqlGen('board', 'S', {where: ['id', req.params.id]});
+		rs = await sqlGen('board', 'S', {
+			where: {
+				op: 'AND',
+				fields: [['id', req.params.id], ['uid', req.session.user.id]]
+			}
+		});
 		pug.list = rs[0][0];
 		res.render('./board/write.pug', pug);
 	}
@@ -103,17 +117,24 @@ router.get('/update/:id', async (req, res, next) => {
 	}
 });
 
-router.post('/saveUpdate', upload.single('upfile'), async (req, res, next) => {
+router.post('/saveUpdate', isUser, upload.single('upfile'), async (req, res, next) => {
 	let connect, rs;
 	try {
 		if(req.allow === false) res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
 		else {
 			if(req.file) {
-				rs = await sqlGen('board', 'S', {where: ['id', req.body.id], field: ['savefile']});
+				rs = await sqlGen('board', 'S', {
+					where: {
+						op: 'AND',
+						fields: [['id', req.body.id], ['uid', req.session.user.id]]
+					}, field: ['savefile']});
 				if(rs[0][0].savefile) await fs.remove(uploadFolder(rs[0][0].savefile));
 			}
 			rs = await sqlGen('board', 'U', { 
-				where: ['id', req.body.id], 
+				where: {
+					op: 'AND',
+					fields: [['id', req.body.id], ['uid', req.session.user.id]]
+				}, 
 				field: ['title', 'writer', 'content'],
 				data: req.body,
 				file: req.file
