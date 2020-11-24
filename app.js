@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const createError = require('http-errors');
-const session = require('express-session');
+const session = require('./modules/session-conn');
 
 
 /** modules ********************************/
@@ -24,15 +24,10 @@ app.set('views', path.join(__dirname, './views'));
 app.locals.pretty = true;
 
 /** middleware ********************************/
-app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-app.use(session({
-	secret: process.env.SESSION_SALT,
-	resave: false,
-	saveUninitialized: true,
-	cookie: { secure: false }
-}));
+app.use(logger);
+app.use(session);
 
 
 /** routers ********************************/
