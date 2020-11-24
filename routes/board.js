@@ -1,14 +1,13 @@
 const express = require('express');
 const moment = require('moment');
-const path = require('path');
 const fs = require('fs-extra');
 const createError = require('http-errors');
 const router = express.Router();
-const { pool, sqlGen } = require('../modules/mysql-conn');
+const { sqlGen } = require('../modules/mysql-conn');
 const { alert, uploadFolder, imgFolder, extGen } = require('../modules/util');
 const { upload, imgExt } = require('../modules/multer-conn');
 const pager = require('../modules/pager-conn');
-const { isUser, isGuest } = require('../modules/auth-conn');
+const { isUser, isUserApi } = require('../modules/auth-conn');
 
 router.get(['/', '/list', '/list/:page'], async (req, res, next) => {
 	let page = req.params.page || 1;
@@ -152,13 +151,21 @@ router.get('/download', (req, res, next) => {
 	res.download(uploadFolder(saveFile), realFile);
 });
 
-router.get('/fileRemove/:id', async (req, res, next) => {
+router.get('/fileRemove/:id', isUserApi, async (req, res, next) => {
 	let connect, rs;
 	try {
-		rs = await sqlGen('board', 'S', {where: ['id', req.params.id], field: ['savefile']});
+		rs = await sqlGen('board', 'S', {
+			where: {
+				op: 'AND',
+				fields: [['id', req.params.id], ['uid', req.session.user.id]],
+			}, 
+			field: ['savefile']});
 		if(rs[0][0].savefile) await fs.remove(uploadFolder(rs[0][0].savefile));
 		rs = await sqlGen('board', 'U', {
-			where: ['id', req.params.id],
+			where: {
+				op: 'AND',
+				fields: [['id', req.params.id], ['uid', req.session.user.id]],
+			},
 			field: ['realfile', 'savefile'],
 			data: {realfile: null, savefile: null}
 		});

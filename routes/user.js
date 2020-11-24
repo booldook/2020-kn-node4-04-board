@@ -4,14 +4,15 @@ const createError = require('http-errors');
 const bcrypt = require('bcrypt');
 const { sqlGen } = require('../modules/mysql-conn');
 const { alert } = require('../modules/util');
+const { isUser, isGuest, isUserApi, isGuestApi } = require('../modules/auth-conn');
 
-router.get('/join', (req, res, next) => {
+router.get('/join', isGuest, (req, res, next) => {
 	const pug = {title: '회원 가입', js: 'user-fr', css: 'user-fr'}
 	res.render('user/join', pug);
 });
 
 
-router.get('/idchk/:userid', async (req, res, next) => {
+router.get('/idchk/:userid', isGuestApi, async (req, res, next) => {
 	try {
 		let rs = await sqlGen('users', 'S', {
 			field:['userid'],
@@ -26,7 +27,7 @@ router.get('/idchk/:userid', async (req, res, next) => {
 	}
 });
 
-router.post('/save', async (req, res, next) => {
+router.post('/save', isGuest, async (req, res, next) => {
 	console.log(process.env.BCRYPT_SALT, process.env.BCRYPT_ROUND);
 	req.body.userpw = await bcrypt.hash(
 		req.body.userpw + process.env.BCRYPT_SALT, Number(process.env.BCRYPT_ROUND));
@@ -47,12 +48,12 @@ router.post('/save', async (req, res, next) => {
 	}
 });
 
-router.get('/login', (req, res, next) => {
+router.get('/login', isGuest, (req, res, next) => {
 	const pug = {title: '회원 로그인', js: 'user-fr', css: 'user-fr'}
 	res.render('user/login', pug);
 });
 
-router.post('/logon', async (req, res, next) => {
+router.post('/logon', isGuest, async (req, res, next) => {
 	try {
 		let rs = await sqlGen('users', 'S', {
 			where: ['userid', req.body.userid]
@@ -82,7 +83,7 @@ router.post('/logon', async (req, res, next) => {
 	}
 });
 
-router.get('/logout', (req, res, next) => {
+router.get('/logout', isUser, (req, res, next) => {
 	if(req.session) {
 		req.session.destroy();
 		req.app.locals.user = null;
